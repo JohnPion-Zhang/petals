@@ -10,6 +10,51 @@
 
 Generate text with distributed **Llama 3.1** (up to 405B), **Mixtral** (8x22B), **Falcon** (40B+) or **BLOOM** (176B) and fine‑tune them for your own tasks &mdash; right from your desktop computer or Google Colab:
 
+## 🚀 Quick Start
+
+### Installation
+
+**Option 1: UV (Recommended)** 🌟
+
+[UV](https://docs.astral.sh/uv/) is a fast Python package manager that handles dependency resolution and virtual environments:
+
+```bash
+# Install UV (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone and install Petals
+git clone https://github.com/bigscience-workshop/petals
+cd petals
+
+# Create virtual environment and install dependencies
+uv sync --extra dev
+
+# Activate the virtual environment
+source .venv/bin/activate  # On macOS/Linux
+# or: .venv\Scripts\activate  # On Windows
+```
+
+**Option 2: pip (Traditional)**
+
+```bash
+# Install from PyPI
+pip install petals
+
+# Or install from source
+git clone https://github.com/bigscience-workshop/petals
+cd petals
+pip install -e ".[dev]"
+```
+
+**Option 3: conda**
+
+```bash
+conda install pytorch pytorch-cuda=11.7 -c pytorch -c nvidia
+pip install git+https://github.com/bigscience-workshop/petals
+```
+
+### Run a Model in 3 Lines
+
 ```python
 from transformers import AutoTokenizer
 from petals import AutoDistributedModelForCausalLM
@@ -25,6 +70,11 @@ model = AutoDistributedModelForCausalLM.from_pretrained(model_name)
 inputs = tokenizer("A cat sat", return_tensors="pt")["input_ids"]
 outputs = model.generate(inputs, max_new_tokens=5)
 print(tokenizer.decode(outputs[0]))  # A cat sat on a mat...
+```
+
+**With UV:**
+```bash
+uv run python your_script.py
 ```
 
 <p align="center">
@@ -45,13 +95,27 @@ As an example, here is how to host a part of [Llama 3.1 (405B) Instruct](https:/
 
 🦙 **Want to host Llama?** [Request access](https://huggingface.co/meta-llama/Meta-Llama-3.1-405B-Instruct) to its weights, then run `huggingface-cli login` in the terminal before loading the model.
 
-🐧 **Linux + Anaconda.** Run these commands for NVIDIA GPUs (or follow [this](https://github.com/bigscience-workshop/petals/wiki/Running-on-AMD-GPU) for AMD):
+🐧 **Linux + UV (Recommended)**
+
+```bash
+# Clone and install with UV
+git clone https://github.com/bigscience-workshop/petals
+cd petals
+uv sync
+
+# Run the server
+uv run python -m petals.cli.run_server meta-llama/Meta-Llama-3.1-405B-Instruct
+```
+
+🐧 **Linux + Anaconda (NVIDIA GPUs)**
 
 ```bash
 conda install pytorch pytorch-cuda=11.7 -c pytorch -c nvidia
 pip install git+https://github.com/bigscience-workshop/petals
 python -m petals.cli.run_server meta-llama/Meta-Llama-3.1-405B-Instruct
 ```
+
+For AMD GPUs, follow [this guide](https://github.com/bigscience-workshop/petals/wiki/Running-on-AMD-GPU).
 
 🪟 **Windows + WSL.** Follow [this guide](https://github.com/bigscience-workshop/petals/wiki/Run-Petals-server-on-Windows) on our Wiki.
 
@@ -63,12 +127,14 @@ sudo docker run -p 31330:31330 --ipc host --gpus all --volume petals-cache:/cach
     python -m petals.cli.run_server --port 31330 meta-llama/Meta-Llama-3.1-405B-Instruct
 ```
 
-🍏 **macOS + Apple M1/M2 GPU.** Install [Homebrew](https://brew.sh/), then run these commands:
+🍏 **macOS + Apple M1/M2 GPU.** Install [Homebrew](https://brew.sh/), then run:
 
 ```bash
-brew install python
-python3 -m pip install git+https://github.com/bigscience-workshop/petals
-python3 -m petals.cli.run_server meta-llama/Meta-Llama-3.1-405B-Instruct
+brew install python uv
+git clone https://github.com/bigscience-workshop/petals
+cd petals
+uv sync
+uv run python -m petals.cli.run_server meta-llama/Meta-Llama-3.1-405B-Instruct
 ```
 
 <p align="center">
@@ -121,6 +187,42 @@ Please see **Section 3.3** of our [paper](https://arxiv.org/pdf/2209.01188.pdf).
 ### 🛠️ Contributing
 
 Please see our [FAQ](https://github.com/bigscience-workshop/petals/wiki/FAQ:-Frequently-asked-questions#contributing) on contributing.
+
+#### Development Setup with UV
+
+```bash
+# Clone the repository
+git clone https://github.com/bigscience-workshop/petals
+cd petals
+
+# Install with development dependencies
+uv sync --extra dev
+
+# Activate the virtual environment
+source .venv/bin/activate  # macOS/Linux
+# or: .venv\Scripts\activate  # Windows
+
+# Run tests
+uv run pytest tests/
+
+# Run linting
+uv run black src/ tests/
+uv run isort src/ tests/
+
+# Run specific test
+uv run pytest tests/test_dtype.py -v
+```
+
+#### Python Version Requirements
+
+- **Recommended**: Python 3.10 or 3.11
+- **Supported**: Python 3.9, 3.10, 3.11, 3.12
+
+```bash
+# Use UV to set Python version
+uv python install 3.10
+uv python pin 3.10
+```
 
 ### 📜 Citations
 

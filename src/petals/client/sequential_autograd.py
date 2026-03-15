@@ -7,7 +7,7 @@ from collections import deque
 from typing import List, Optional, Sequence, Tuple
 
 import torch
-from hivemind import MSGPackSerializer
+from hivemind.utils import MSGPackSerializer
 from hivemind.moe.client.remote_expert_worker import RemoteExpertWorker
 from hivemind.utils.logging import get_logger
 

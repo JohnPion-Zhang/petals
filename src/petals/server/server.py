@@ -14,7 +14,9 @@ import hivemind
 import psutil
 import torch
 import torch.mps
-from hivemind import DHT, MAX_DHT_TIME_DISCREPANCY_SECONDS, BatchTensorDescriptor, get_dht_time
+from hivemind import DHT
+from hivemind.utils import get_dht_time, MAX_DHT_TIME_DISCREPANCY_SECONDS
+from hivemind.utils.tensor_descr import BatchTensorDescriptor
 from hivemind.moe.server.layers import add_custom_models_from_file
 from hivemind.moe.server.runtime import Runtime
 from hivemind.proto.runtime_pb2 import CompressionType

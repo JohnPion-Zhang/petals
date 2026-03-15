@@ -7,7 +7,10 @@ import uuid
 from typing import AsyncIterator, List, Optional, Tuple
 
 import torch
-from hivemind import MSGPackSerializer, anext, deserialize_torch_tensor, get_logger, serialize_torch_tensor
+from hivemind.utils import MSGPackSerializer
+from hivemind.utils.asyncio import anext
+from hivemind.compression.serialization import deserialize_torch_tensor, serialize_torch_tensor
+from hivemind.utils.logging import get_logger
 from hivemind.moe.client.remote_expert_worker import RemoteExpertWorker
 from hivemind.p2p import P2P
 from hivemind.proto import runtime_pb2

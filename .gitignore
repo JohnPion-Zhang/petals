@@ -128,3 +128,7 @@ dmypy.json
 .pyre/
 
 .idea/
+.gitnexus
+.claude/
+CLAUDE.md
+AGENTS.md
