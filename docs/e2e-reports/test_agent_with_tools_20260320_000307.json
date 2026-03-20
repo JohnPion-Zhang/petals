@@ -1,0 +1,16 @@
+{
+  "test_name": "test_agent_with_tools",
+  "timestamp": "2026-03-20T00:02:55.238353",
+  "model": "claude-4.5-sonnet",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": true,
+  "duration_ms": 11873.960971832275,
+  "input_tokens": null,
+  "output_tokens": null,
+  "total_tokens": 433,
+  "error": null,
+  "request_payload": null,
+  "response_content": "I don\u2019t have access to real\u2011time weather data, so I can\u2019t give you the current conditions in Tokyo. You can check a weather service (e.g., weather.com, the Weather Channel app, or a local forecast site) for the latest forecast.\n\nAs for the math:\u202f15\u202f+\u202f27\u202f=\u202f42.",
+  "tool_calls_detected": [],
+  "raw_response": null
+}

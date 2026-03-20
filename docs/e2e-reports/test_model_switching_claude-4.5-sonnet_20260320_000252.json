@@ -1,0 +1,16 @@
+{
+  "test_name": "test_model_switching_claude-4.5-sonnet",
+  "timestamp": "2026-03-20T00:02:49.841624",
+  "model": "claude-4.5-sonnet",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": true,
+  "duration_ms": 2317.390203475952,
+  "input_tokens": null,
+  "output_tokens": null,
+  "total_tokens": null,
+  "error": null,
+  "request_payload": null,
+  "response_content": "test",
+  "tool_calls_detected": [],
+  "raw_response": null
+}

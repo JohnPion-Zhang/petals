@@ -1,0 +1,16 @@
+{
+  "test_name": "test_agent_simple_task",
+  "timestamp": "2026-03-20T00:02:52.164374",
+  "model": "claude-4.5-sonnet",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": true,
+  "duration_ms": 3072.30806350708,
+  "input_tokens": 58,
+  "output_tokens": null,
+  "total_tokens": 117,
+  "error": "'TestReport' object has no attribute 'total_tokens_used'",
+  "request_payload": null,
+  "response_content": "Paris",
+  "tool_calls_detected": [],
+  "raw_response": null
+}

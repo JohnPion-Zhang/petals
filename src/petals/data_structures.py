@@ -1,10 +1,112 @@
 import dataclasses
 from enum import Enum
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Generator
+import uuid
 
 import pydantic.v1 as pydantic
 from hivemind.p2p import PeerID
 from hivemind.moe.expert_uid import ExpertUID
+
+
+class CallStatus(Enum):
+    """Status of a tool call execution."""
+    PENDING = "pending"
+    RUNNING = "running"
+    DONE = "done"
+    FAILED = "failed"
+
+
+@dataclasses.dataclass
+class ToolCall:
+    """Represents a single tool call with its arguments and execution state."""
+    name: str
+    arguments: Optional[Dict[str, Any]] = None
+    id: str = dataclasses.field(default_factory=lambda: f"tool_{uuid.uuid4().hex[:12]}")
+    status: CallStatus = CallStatus.PENDING
+    result: Any = None
+    dependencies: List[str] = dataclasses.field(default_factory=list)
+    error: Optional[str] = None
+
+
+@dataclasses.dataclass
+class Message:
+    """Represents a message in the conversation history."""
+    role: str  # "user", "assistant", "tool"
+    content: str
+    name: Optional[str] = None
+    tool_call_id: Optional[str] = None
+
+
+@dataclasses.dataclass
+class ContextWindow:
+    """Represents the current context window with conversation history."""
+    max_tokens: int = 4096
+    system_prompt: str = ""
+    tool_descriptions: str = ""
+    conversation_history: List[Message] = dataclasses.field(default_factory=list)
+    active_context: str = ""
+
+    def add_message(self, message: Message):
+        """Add a message to conversation history."""
+        self.conversation_history.append(message)
+
+
+@dataclasses.dataclass
+class AgentState:
+    """Tracks the state of an agent execution.
+
+    Attributes:
+        current_iteration: Current iteration count in the agent loop.
+        max_iterations: Maximum iterations before stopping.
+        _tool_history: Internal list storing tool history.
+        total_tokens_used: Total tokens consumed by LLM calls.
+        stopped_early: Flag indicating if agent stopped before completion.
+    """
+    current_iteration: int = 0
+    max_iterations: int = 10
+    _tool_history: List[ToolCall] = dataclasses.field(default_factory=list)
+    total_tokens_used: int = 0
+    stopped_early: bool = False
+
+    @property
+    def tool_history(self) -> Generator[ToolCall, None, None]:
+        """Generator yielding tool history as tools complete.
+
+        Note: Generators are single-use. Iterate once, or use `as_list()`
+        for multiple iterations.
+
+        Usage:
+            for tool in agent.state.tool_history:
+                print(f"Tool: {tool.name}, Status: {tool.status}")
+        """
+        yield from self._tool_history
+
+    def add_tool(self, tool_call: ToolCall) -> None:
+        """Add tool to history (for streaming/generator pattern)."""
+        self._tool_history.append(tool_call)
+
+    def clear(self) -> None:
+        """Clear tool history and reset iteration state."""
+        self._tool_history.clear()
+        self.current_iteration = 0
+        self.stopped_early = False
+
+    def as_list(self) -> List[ToolCall]:
+        """Materialize full history for debugging.
+
+        Returns:
+            Complete list of all tool calls.
+        """
+        return list(self._tool_history)
+
+    def update_token_usage(self, usage: Dict[str, int]) -> None:
+        """Update total tokens used from LLM response.
+
+        Args:
+            usage: Dict with 'prompt_tokens', 'completion_tokens', 'total_tokens'.
+        """
+        if usage and "total_tokens" in usage:
+            self.total_tokens_used += usage["total_tokens"]
 
 ModuleUID = str
 UID_DELIMITER = "."  # delimits parts of one module uid, e.g. "bloom.transformer.h.4.self_attention"

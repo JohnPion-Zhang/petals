@@ -1,0 +1,16 @@
+{
+  "test_name": "test_simple_generate",
+  "timestamp": "2026-03-20T00:02:43.273468",
+  "model": "MiniMax-M2.7",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": true,
+  "duration_ms": 4356.716156005859,
+  "input_tokens": 52,
+  "output_tokens": 50,
+  "total_tokens": 102,
+  "error": null,
+  "request_payload": null,
+  "response_content": "The user wants the assistant to \"Say 'Hello, World!' in exactly those words.\"\n\nInterpretation: The user wants the assistant to output exactly the phrase \"Hello, World!\" (including the punctuation). The user wants the assistant to \"Say",
+  "tool_calls_detected": [],
+  "raw_response": null
+}

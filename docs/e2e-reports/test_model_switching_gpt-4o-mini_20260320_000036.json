@@ -1,0 +1,16 @@
+{
+  "test_name": "test_model_switching_gpt-4o-mini",
+  "timestamp": "2026-03-20T00:00:36.684351",
+  "model": "gpt-4o-mini",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": false,
+  "duration_ms": 8.28409194946289,
+  "input_tokens": null,
+  "output_tokens": null,
+  "total_tokens": null,
+  "error": "litellm.NotFoundError: NotFoundError: OpenAIException - Provider 'undefined' not foundError: Provider 'undefined' not found\n    at qn (/Users/eli/Library/pnpm/global/5/.pnpm/@musistudio+claude-code-router@2.0.0/node_modules/@musistudio/claude-code-router/dist/cli.js:582:7451)\n    at cN (/Users/eli/Library/pnpm/global/5/.pnpm/@musistudio+claude-code-router@2.0.0/node_modules/@musistudio/claude-code-router/dist/cli.js:582:8525)\n    at Object.<anonymous> (/Users/eli/Library/pnpm/global/5/.pnpm/@musistudio+claude-code-router@2.0.0/node_modules/@musistudio/claude-code-router/dist/cli.js:582:12405)\n    at E (/Users/eli/Library/pnpm/global/5/.pnpm/@musistudio+claude-code-router@2.0.0/node_modules/@musistudio/claude-code-router/dist/cli.js:56:41258)\n    at g (/Users/eli/Library/pnpm/global/5/.pnpm/@musistudio+claude-code-router@2.0.0/node_modules/@musistudio/claude-code-router/dist/cli.js:56:41002)\n    at j (/Users/eli/Library/pnpm/global/5/.pnpm/@musistudio+claude-code-router@2.0.0/node_modules/@musistudio/claude-code-router/dist/cli.js:56:29335)\n    at ee (/Users/eli/Library/pnpm/global/5/.pnpm/@musistudio+claude-code-router@2.0.0/node_modules/@musistudio/claude-code-router/dist/cli.js:56:29463)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
+  "request_payload": null,
+  "response_content": null,
+  "tool_calls_detected": [],
+  "raw_response": null
+}

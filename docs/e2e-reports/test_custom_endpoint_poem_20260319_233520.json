@@ -1,0 +1,18 @@
+{
+  "test_name": "test_custom_endpoint_poem",
+  "timestamp": "2026-03-19T23:35:20.736899",
+  "model": "claude-4.5-sonnet",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": false,
+  "duration_ms": 2.3190975189208984,
+  "input_tokens": null,
+  "output_tokens": null,
+  "total_tokens": null,
+  "error": "litellm.BadRequestError: LLM Provider NOT provided. Pass in the LLM provider you are trying to call. You passed model=claude-4.5-sonnet\n Pass model as E.g. For 'Huggingface' inference endpoints pass in `completion(model='huggingface/starcoder',..)` Learn more: https://docs.litellm.ai/docs/providers",
+  "request_payload": {
+    "prompt": "Write a short haiku about coding."
+  },
+  "response_content": null,
+  "tool_calls_detected": [],
+  "raw_response": null
+}

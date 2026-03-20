@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P2P Petals Architecture & Workflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'Fira Code', 'SF Mono', Consolas, monospace;
+
+    /* Light theme (Deep blue & gold strategy) */
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface2: #f1f5f9;
+    --surface-elevated: #ffffff;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-bright: rgba(0, 0, 0, 0.16);
+    --text: #0f172a;
+    --text-dim: #475569;
+    
+    --accent: #d4a73a;
+    --accent-dim: rgba(212, 167, 58, 0.12);
+    --teal: #1e3a5f;
+    --teal-dim: rgba(30, 58, 95, 0.08);
+    --sage: #15803d;
+    --sage-dim: rgba(21, 128, 61, 0.1);
+    --orange: #c2410c;
+    --orange-dim: rgba(194, 65, 12, 0.1);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Dark theme (Premium dark blue & gold) */
+      --bg: #0b1120;
+      --surface: #1e3a5f;
+      --surface2: #162844;
+      --surface-elevated: #284b7a;
+      --border: rgba(255, 255, 255, 0.1);
+      --border-bright: rgba(255, 255, 255, 0.2);
+      --text: #f8fafc;
+      --text-dim: #cbd5e1;
+
+      --accent: #fbbf24;
+      --accent-dim: rgba(251, 191, 36, 0.15);
+      --teal: #38bdf8;
+      --teal-dim: rgba(56, 189, 248, 0.15);
+      --sage: #4ade80;
+      --sage-dim: rgba(74, 222, 128, 0.15);
+      --orange: #fb923c;
+      --orange-dim: rgba(251, 146, 60, 0.15);
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 10% 10%, var(--teal-dim) 0%, transparent 40%),
+      radial-gradient(circle at 90% 90%, var(--accent-dim) 0%, transparent 40%);
+    color: var(--text);
+    font-family: var(--font-body);
+    padding: 40px;
+    min-height: 100vh;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate {
+    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 0.08s);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+    font-family: var(--font-mono);
+    margin-bottom: 32px;
+  }
+
+  /* ============ MERMAID ============ */
+  .mermaid-wrap {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 24px;
+    overflow: auto;
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 480px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  .diagram-shell { position: relative; }
+  .diagram-shell__hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    opacity: 0.8;
+  }
+
+  .mermaid-viewport {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+  }
+  .mermaid-canvas { position: absolute; top: 0; left: 0; }
+  .zoom-label { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); padding: 0 8px; white-space: nowrap; line-height: 28px; }
+
+  .mermaid .nodeLabel { font-family: var(--font-body) !important; font-size: 16px !important; }
+  .mermaid .edgeLabel { font-family: var(--font-mono) !important; font-size: 13px !important; }
+  .mermaid .node rect, .mermaid .node circle, .mermaid .node polygon { stroke-width: 1.5px !important; }
+  .mermaid .edge-pattern-solid { stroke-width: 1.5px !important; }
+
+  /* ============ ARCHITECTURE CARDS ============ */
+  .grid-header {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    margin-top: 56px;
+    color: var(--text);
+  }
+
+  .diagram-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .section--teal { border-color: var(--teal-dim); }
+  .section--teal .section-label { color: var(--teal); }
+  .section--teal .section-label .dot { background: var(--teal); }
+
+  .section--accent { border-color: var(--accent-dim); }
+  .section--accent .section-label { color: var(--accent); }
+  .section--accent .section-label .dot { background: var(--accent); }
+
+  .section--sage { border-color: var(--sage-dim); }
+  .section--sage .section-label { color: var(--sage); }
+  .section--sage .section-label .dot { background: var(--sage); }
+
+  .section--orange { border-color: var(--orange-dim); }
+  .section--orange .section-label { color: var(--orange); }
+  .section--orange .section-label .dot { background: var(--orange); }
+
+  .inner-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .inner-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .inner-card:hover {
+    border-color: var(--border-bright);
+  }
+
+  .inner-card .title {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .inner-card .desc {
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .flow-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 8px 0;
+  }
+  .flow-arrow svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: var(--border-bright);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1 class="animate" style="--i:0">P2P Petals Architecture</h1>
+  <p class="subtitle animate" style="--i:1">distributed language model inference</p>
+
+  <section class="diagram-shell animate" style="--i:2">
+    <p class="diagram-shell__hint">Ctrl/Cmd + wheel to zoom. Scroll to pan. Double-click to fit.</p>
+    <div class="mermaid-wrap" id="mermaid-wrap">
+      <div class="mermaid-viewport">
+        <div class="mermaid-canvas mermaid"></div>
+      </div>
+    </div>
+    <script type="text/plain" class="diagram-source">
+      flowchart TD
+        client["Client Node"]:::clientType
+        dht[("Hivemind DHT")]:::infraType
+        server1["Server 1 「Blocks 0-15」"]:::serverType
+        server2["Server 2 「Blocks 16-31」"]:::serverType
+        server3["Server 3 「Blocks 32-48」"]:::serverType
+
+        client -.->|"(1) Route Discovery"| dht
+        dht -.->|"(2) Provider RPC Info"| client
+        
+        client -->|"(3) Inference RPC Block 0"| server1
+        server1 -.->|"(4) State and Tensors"| client
+        
+        client -->|"(5) Inference RPC Block 16"| server2
+        server2 -.->|"(6) State and Tensors"| client
+        
+        client -->|"(7) Inference RPC Block 32"| server3
+        server3 -.->|"(8) Output Tensors"| client
+        
+        server1 -.->|"heartbeat"| dht
+        server2 -.->|"heartbeat"| dht
+        server3 -.->|"heartbeat"| dht
+
+        classDef clientType stroke:#0369a1,fill:#f1f5f9,color:#0f172a
+        classDef serverType stroke:#d4a73a,fill:#fffbeb,color:#0f172a
+        classDef infraType stroke:#15803d,fill:#f0fdf4,color:#0f172a
+    </script>
+  </section>
+
+  <h2 class="grid-header animate" style="--i:3">Module Deep Dive</h2>
+
+  <div class="diagram-grid">
+    <!-- CLIENT -->
+    <div class="section section--teal animate" style="--i:4">
+      <div class="section-label"><span class="dot"></span> petals.client</div>
+      <div class="inner-grid">
+        <div class="inner-card">
+          <div class="title">RemoteSequenceManager</div>
+          <div class="desc">Routes requests to optimal server nodes using DHT lookups and spending policies.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">InferenceSession</div>
+          <div class="desc">Manages multi-step generation sessions, regenerating caches on failures.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">RemoteSequential</div>
+          <div class="desc">Core PyTorch module proxying standard transformer sequential layers to distributed servers.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">ClientConfig</div>
+          <div class="desc">Handles batch sizing, active DHT prefixes, and limits for the client session.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-arrow animate" style="--i:5">
+      <svg viewBox="0 0 20 20"><path d="M10 4 L10 16 M6 12 L10 16 L14 12"/></svg>
+      RPC Connections
+    </div>
+
+    <!-- SERVER -->
+    <div class="section section--accent animate" style="--i:6">
+      <div class="section-label"><span class="dot"></span> petals.server</div>
+      <div class="inner-grid">
+        <div class="inner-card">
+          <div class="title">Server Lifecycle</div>
+          <div class="desc">Maintains <code>ModuleContainer</code> connections and announces hosted blocks to the swarm.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">TransformerBackend</div>
+          <div class="desc">Wraps transformer blocks to execute requested forward/backward and inference passes.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">PrioritizedTaskPool</div>
+          <div class="desc">Batches and schedules RPC requests dynamically prioritizing older sessions.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">MemoryCache</div>
+          <div class="desc">Efficient LRU KV-cache eviction across multiple connected clients sharing the GPU.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-arrow animate" style="--i:7">
+      <svg viewBox="0 0 20 20"><path d="M10 4 L10 16 M6 12 L10 16 L14 12"/></svg>
+      Block Processing
+    </div>
+
+    <!-- MODELS -->
+    <div class="section section--sage animate" style="--i:8">
+      <div class="section-label"><span class="dot"></span> petals.models</div>
+      <div class="inner-grid">
+        <div class="inner-card">
+          <div class="title">Llama & Mixtral</div>
+          <div class="desc">Extends models up to 405B, speculative decoding, and optimized CUDA-graphed MoE blocks.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">Falcon & BLOOM</div>
+          <div class="desc">Provides specialized positional embeddings (ALiBi, RoPE) and multi-query attention blocks.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">Optimized Blocks</div>
+          <div class="desc">Transformer implementations natively wrapping model logic for network serialization.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UTILS -->
+    <div class="section section--orange animate" style="--i:9">
+      <div class="section-label"><span class="dot"></span> petals.utils</div>
+      <div class="inner-grid">
+        <div class="inner-card">
+          <div class="title">DHT Tools</div>
+          <div class="desc">Wraps Hivemind's Distributed Hash Table logic to track active modules and latency.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">CUDA Optimization</div>
+          <div class="desc">Applies CUDA graphs mapping to bypass Python kernel-launch overhead during inference.</div>
+        </div>
+        <div class="inner-card">
+          <div class="title">Block Conversion</div>
+          <div class="desc">Automatic tensor quantization (int8, fp4, nf4) balancing precision and bandwidth.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  import elkLayouts from 'https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk/dist/mermaid-layout-elk.esm.min.mjs';
+
+  const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+
+  mermaid.registerLayoutLoaders(elkLayouts);
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    look: 'classic',
+    layout: 'elk',
+    themeVariables: {
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontSize: '16px',
+      primaryColor: isDark ? '#1e3a5f' : '#f1f5f9',
+      primaryBorderColor: isDark ? '#38bdf8' : '#0369a1',
+      primaryTextColor: isDark ? '#f8fafc' : '#0f172a',
+      secondaryColor: isDark ? '#352912' : '#fffbeb',
+      secondaryBorderColor: isDark ? '#fbbf24' : '#d4a73a',
+      secondaryTextColor: isDark ? '#f8fafc' : '#0f172a',
+      tertiaryColor: isDark ? '#113324' : '#f0fdf4',
+      tertiaryBorderColor: isDark ? '#4ade80' : '#15803d',
+      tertiaryTextColor: isDark ? '#f8fafc' : '#0f172a',
+      lineColor: isDark ? '#94a3b8' : '#475569'
+    }
+  });
+
+  const shell = document.querySelector('.diagram-shell');
+  const canvas = shell.querySelector('.mermaid-canvas');
+  const source = shell.querySelector('.diagram-source');
+  
+  // Basic rendering implementation for visual explainer
+  async function renderDiagram() {
+    try {
+      const code = source.textContent;
+      const { svg } = await mermaid.render('main-diagram', code);
+      canvas.innerHTML = svg;
+      const svgNode = canvas.querySelector('svg');
+      svgNode.style.width = '100%';
+      svgNode.style.height = 'auto';
+      svgNode.style.maxWidth = '100%';
+      svgNode.removeAttribute('width');
+      svgNode.removeAttribute('height');
+    } catch(e) {
+      console.error(e);
+      canvas.innerHTML = '<p style="color:red">Failed to render Mermaid diagram.</p>';
+    }
+  }
+
+  renderDiagram();
+</script>
+</body>
+</html>

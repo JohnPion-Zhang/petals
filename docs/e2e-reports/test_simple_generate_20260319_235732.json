@@ -1,0 +1,16 @@
+{
+  "test_name": "test_simple_generate",
+  "timestamp": "2026-03-19T23:57:29.505851",
+  "model": "MiniMax-M2.7",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": true,
+  "duration_ms": 2972.886085510254,
+  "input_tokens": 52,
+  "output_tokens": 50,
+  "total_tokens": 102,
+  "error": null,
+  "request_payload": null,
+  "response_content": null,
+  "tool_calls_detected": [],
+  "raw_response": null
+}

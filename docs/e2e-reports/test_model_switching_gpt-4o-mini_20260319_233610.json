@@ -1,0 +1,16 @@
+{
+  "test_name": "test_model_switching_gpt-4o-mini",
+  "timestamp": "2026-03-19T23:36:10.386920",
+  "model": "gpt-4o-mini",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": false,
+  "duration_ms": 0.008344650268554688,
+  "input_tokens": null,
+  "output_tokens": null,
+  "total_tokens": null,
+  "error": "litellm.main.acompletion() got multiple values for keyword argument 'model'",
+  "request_payload": null,
+  "response_content": null,
+  "tool_calls_detected": [],
+  "raw_response": null
+}

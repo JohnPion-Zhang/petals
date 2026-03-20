@@ -180,6 +180,124 @@ Advanced guides:
 - Launch a private swarm: [guide](https://github.com/bigscience-workshop/petals/wiki/Launch-your-own-swarm)
 - Run a custom model: [guide](https://github.com/bigscience-workshop/petals/wiki/Run-a-custom-model-with-Petals)
 
+## HTTP Client and Agent Layer
+
+Petals includes an HTTP-based agent layer for building LLM-powered applications with tool calling support. This layer uses [litellm](https://github.com/BerriAI/litellm) to provide a unified interface across multiple LLM providers.
+
+### Features
+
+- **Unified LLM Interface**: Single API for OpenAI, Anthropic, and custom OpenAI-compatible endpoints
+- **Multi-Protocol Support**:
+  - OpenAI `/chat/completions` endpoint
+  - OpenAI Responses API (`/v1/responses`)
+  - Anthropic `/messages` endpoint
+- **Agent Orchestrator**: Full agent loop with tool calling and execution
+- **Runtime Model Switching**: Change models on-the-fly without recreating the client
+- **Token Usage Tracking**: Monitor prompt/completion/total token usage
+- **Smart Context Management**: Automatic context trimming to fit token budgets
+
+### Quick Example
+
+```python
+from petals.client.agent import AgentOrchestrator
+
+# Initialize the agent with your API key
+agent = AgentOrchestrator(
+    api_key="your-api-key",
+    default_model="gpt-4o-mini",
+    tools=[
+        {
+            "name": "calculate",
+            "func": lambda expression: eval(expression),
+            "schema": {
+                "name": "calculate",
+                "description": "Evaluate a mathematical expression",
+                "parameters": {"type": "object", "properties": {"expression": {"type": "string"}}}
+            }
+        }
+    ],
+    max_iterations=5
+)
+
+# Run the agent with a task
+result = await agent.run("What is 15 * 23 + 7?")
+print(result)
+```
+
+### HTTP Client Usage
+
+For direct LLM access without the agent framework:
+
+```python
+from petals.client.http_client import HTTPClient
+
+# Create client with OpenAI-compatible endpoint
+client = HTTPClient(
+    api_key="your-api-key",
+    base_url="https://api.openai.com/v1",
+    default_model="gpt-4o-mini"
+)
+
+# Generate a completion
+response = await client.generate("Hello, world!")
+
+# Or use chat completion with message history
+messages = [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "What is the capital of France?"}
+]
+response = await client.chat(messages)
+print(response.content)
+
+# Switch models at runtime
+client.switch_model("gpt-4o")
+```
+
+### Tool Calling
+
+The agent framework supports tool calling with parallel execution and dependency management:
+
+```python
+from petals.client.agent import AgentOrchestrator
+from petals.client.tool_registry import ToolRegistry
+from petals.client.tool_executor import ToolExecutor
+
+# Create a tool registry
+registry = ToolRegistry()
+
+# Register synchronous or async tools
+def get_weather(city: str) -> str:
+    return f"The weather in {city} is sunny."
+
+import asyncio
+async def fetch_data(url: str) -> str:
+    # Async tool for I/O operations
+    return await some_async_fetch(url)
+
+registry.register("get_weather", get_weather)
+registry.register("fetch_data", fetch_data)
+
+# Create executor and agent
+executor = ToolExecutor(registry)
+agent = AgentOrchestrator(
+    api_key="your-api-key",
+    tools=registry.get_schema()
+)
+
+# Register tools at runtime
+agent.register_tool("custom_tool", custom_function)
+```
+
+### Model Providers
+
+The HTTP client automatically routes requests based on model name:
+
+| Provider | Model Prefix | Example |
+|----------|-------------|---------|
+| OpenAI | `gpt-`, `o1-`, `o3-` | `gpt-4o-mini` |
+| Anthropic | `claude-`, `anthropic/` | `claude-3-5-sonnet` |
+| Custom | `openai/` + base_url | Custom endpoints |
+
 ### Benchmarks
 
 Please see **Section 3.3** of our [paper](https://arxiv.org/pdf/2209.01188.pdf).

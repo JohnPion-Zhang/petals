@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P Petals - Agent HTTP Layer Recap</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-purple: #a371f7;
+            --accent-orange: #d29922;
+            --border-color: #30363d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .meta {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h2::before {
+            content: '';
+            width: 4px;
+            height: 1.5rem;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin: 1.5rem 0 1rem;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .diagram-container {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .mermaid {
+            color: var(--text-primary);
+        }
+
+        .flow-visual {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .flow-step {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-blue);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .flow-step-num {
+            background: var(--accent-blue);
+            color: var(--bg-primary);
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0 auto 0.75rem;
+        }
+
+        .flow-step-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .flow-step-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .files-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .files-table th,
+        .files-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .files-table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .files-table td:first-child {
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            color: var(--accent-blue);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-pass {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+        }
+
+        .status-pass::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+        }
+
+        .code-block {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .code-block .keyword {
+            color: var(--accent-purple);
+        }
+
+        .code-block .string {
+            color: var(--accent-green);
+        }
+
+        .code-block .comment {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1));
+            border-left: 4px solid var(--accent-blue);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+
+        .test-results {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+        }
+
+        .test-name {
+            font-family: monospace;
+            color: var(--text-primary);
+        }
+
+        .test-duration {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .iteration-visual {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .iteration-loop {
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--accent-orange);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .iteration-label {
+            color: var(--accent-orange);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .iteration-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .iteration-step {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .iteration-step.highlight {
+            border-color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        footer {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .flow-step::after {
+                display: none;
+            }
+
+            .flow-visual {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>P2P Petals - Agent HTTP Layer</h1>
+            <p class="subtitle">Visual recap of HTTP-based LLM integration with tool calling support</p>
+            <div class="meta">
+                <span>📅 March 20, 2026</span>
+                <span>🔧 HTTP Client + Agent + Tools</span>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2>What Changed</h2>
+
+            <h3>Architecture Shift</h3>
+            <p>We added an HTTP-based agent layer that calls LLMs through an Anthropic-compatible API endpoint.</p>
+
+            <div class="diagram-container">
+                <pre class="mermaid">
+graph TB
+    subgraph User["👤 User Application"]
+        U["User Input"]
+    end
+
+    subgraph Agent["⚙️ AgentOrchestrator"]
+        A["run()"]
+        H["HTTPClient<br/>(litellm)"]
+        P["ToolParser"]
+        E["ToolExecutor"]
+        C["ContextManager"]
+    end
+
+    subgraph Network["🌐 HTTP Endpoint"]
+        EP["http://127.0.0.1:3456/v1"]
+    end
+
+    U --> A
+    A --> H
+    A --> P
+    A --> E
+    A --> C
+    H --> EP
+
+    style Agent fill:#1a2332,stroke:#58a6ff
+    style Network fill:#1a2332,stroke:#a371f7
+                </pre>
+            </div>
+
+            <h3>Key Files Modified</h3>
+            <table class="files-table">
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>http_client.py</td>
+                        <td>HTTP client using litellm for unified LLM interface</td>
+                    </tr>
+                    <tr>
+                        <td>agent.py</td>
+                        <td>Agent orchestrator with full loop control</td>
+                    </tr>
+                    <tr>
+                        <td>tool_parser.py</td>
+                        <td>Parses &lt;tool_call&gt;...&lt;/tool_call&gt; from LLM output</td>
+                    </tr>
+                    <tr>
+                        <td>tool_executor.py</td>
+                        <td>Executes tools with async parallel support</td>
+                    </tr>
+                    <tr>
+                        <td>test_http_client_e2e.py</td>
+                        <td>E2E tests with real endpoints</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section">
+            <h2>How Tool Calls Work</h2>
+
+            <h3>User Input → Tool Call Iteration</h3>
+            <p>Follow how a user's question gets processed through the agent loop until a final response is returned.</p>
+
+            <div class="flow-visual">
+                <div class="flow-step">
+                    <div class="flow-step-num">1</div>
+                    <div class="flow-step-title">User Input</div>
+                    <div class="flow-step-desc">"Weather in Tokyo + 15+27?"</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-num">2</div>
+                    <div class="flow-step-title">Generate</div>
+                    <div class="flow-step-desc">HTTPClient → LLM endpoint</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-num">3</div>
+                    <div class="flow-step-title">Parse</div>
+                    <div class="flow-step-desc">Extract tool_call tags</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-num">4</div>
+                    <div class="flow-step-title">Execute</div>
+                    <div class="flow-step-desc">Parallel async execution</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-num">5</div>
+                    <div class="flow-step-title">Update</div>
+                    <div class="flow-step-desc">Add results to context</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-num">6</div>
+                    <div class="flow-step-title">Return</div>
+                    <div class="flow-step-desc">Final response to user</div>
+                </div>
+            </div>
+
+            <h3>Sequence Diagram</h3>
+            <div class="diagram-container">
+                <pre class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant A as AgentOrchestrator
+    participant H as HTTPClient
+    participant P as ToolParser
+    participant E as ToolExecutor
+    participant LLM as LLM Endpoint
+
+    U->>A: "What's weather + 15+27?"
+
+    rect rgb(40, 44, 52)
+        Note over A: Iteration 1
+        A->>H: generate(prompt)
+        H->>LLM: POST /v1/messages
+        LLM-->>H: Response with tool_calls
+        H-->>A: LLMResponse
+
+        Note over P: Parse tool calls
+        A->>P: parse(response.content)
+        P-->>A: [get_weather, calculate]
+
+        Note over E: Execute in parallel
+        A->>E: parallel_execute(tool_calls)
+
+        par Parallel
+            E->>E: get_weather → "Sunny"
+            E->>E: calculate → "42"
+        end
+
+        E-->>A: [ToolCall results]
+        A->>A: Update context
+    end
+
+    rect rgb(50, 45, 40)
+        Note over A: Iteration 2
+        A->>H: generate(prompt + results)
+        H->>LLM: POST /v1/messages
+        LLM-->>H: "Weather: Sunny. Math: 42"
+        H-->>A: LLMResponse (no tools)
+    end
+
+    A-->>U: Final response
+                </pre>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Agent Loop Visualization</h2>
+
+            <div class="iteration-visual">
+                <div class="iteration-loop">
+                    <div class="iteration-label">↻ Agent Loop (max 10 iterations)</div>
+                    <div class="iteration-steps">
+                        <div class="iteration-step highlight">Generate</div>
+                        <div class="iteration-step">→</div>
+                        <div class="iteration-step highlight">Parse Tools</div>
+                        <div class="iteration-step">→</div>
+                        <div class="iteration-step highlight">Execute</div>
+                        <div class="iteration-step">→</div>
+                        <div class="iteration-step highlight">Update Context</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="diagram-container">
+                <pre class="mermaid">
+flowchart TB
+    subgraph Input["📥 Input Processing"]
+        U["User Question"] --> CW["Create ContextWindow"]
+    end
+
+    subgraph Loop["🔄 Agent Loop"]
+        CW --> G["Generate → LLM"]
+        G --> T["Parse Tool Calls"]
+        T --> C{Any tools?}
+        C -->|Yes| E["Execute Tools"]
+        C -->|No| F["✓ Return Response"]
+        E --> R["Update Context"]
+        R --> G
+    end
+
+    subgraph Output["📤 Final Output"]
+        F --> O["Final Response to User"]
+    end
+
+    style Input fill:#1a2a3a,stroke:#58a6ff
+    style Loop fill:#2a1a2a,stroke:#a371f7
+    style Output fill:#1a2a1a,stroke:#3fb950
+                </pre>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Key Insight:</strong> The loop continues until either:
+                <ul style="margin: 0.5rem 0 0 1.5rem;">
+                    <li>The LLM provides a final answer (no tool calls)</li>
+                    <li>Max iterations are reached (default: 10)</li>
+                    <li>An unrecoverable error occurs</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Tool Parsing Syntax</h2>
+
+            <h3>LLM Output Format</h3>
+            <p>LLMs output tool calls using a simple XML-like syntax:</p>
+
+            <div class="code-block">
+<span class="comment"># LLM Output:</span>
+I'll check the weather for you.<span class="keyword">&lt;tool_call&gt;</span>get_weather(<span class="string">{"city": "Tokyo"}</span>)<span class="keyword">&lt;/tool_call&gt;</span>
+            </div>
+
+            <h3>ToolParser Extraction</h3>
+            <p>The parser uses regex to extract tool calls:</p>
+
+            <div class="code-block">
+<span class="comment"># Pattern:</span>
+&lt;tool_call&gt;(.*?)&lt;/tool_call&gt;
+
+<span class="comment"># Format:</span>
+tool_name(<span class="string">{...json args...}</span>)
+            </div>
+
+            <h3>Example: Multiple Tool Calls</h3>
+            <div class="code-block">
+<span class="comment"># LLM Output:</span>
+Let me help with that.<span class="keyword">&lt;tool_call&gt;</span>get_weather(<span class="string">{"city": "Tokyo"}</span>)<span class="keyword">&lt;/tool_call&gt;</span><span class="keyword">&lt;tool_call&gt;</span>calculate(<span class="string">{"expression": "15+27"}</span>)<span class="keyword">&lt;/tool_call&gt;</span>
+
+<span class="comment"># Parsed to:</span>
+[
+  ToolCall(name=<span class="string">"get_weather"</span>, arguments=<span class="string">{"city": "Tokyo"}</span>),
+  ToolCall(name=<span class="string">"calculate"</span>, arguments=<span class="string">{"expression": "15+27"}</span>)
+]
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Key Design Decisions</h2>
+
+            <h3>1. litellm for Provider Abstraction</h3>
+            <p>Unified interface for OpenAI, Anthropic, and custom endpoints:</p>
+
+            <div class="code-block">
+<span class="keyword">from</span> petals.client.http_client <span class="keyword">import</span> HTTPClient
+
+client = HTTPClient(
+    api_key=<span class="string">"key"</span>,
+    base_url=<span class="string">"http://127.0.0.1:3456/v1"</span>,
+    default_model=<span class="string">"claude-4.5-sonnet"</span>,
+)
+            </div>
+
+            <div class="highlight-box">
+                <strong>Why litellm?</strong>
+                <ul style="margin: 0.5rem 0 0 1.5rem;">
+                    <li>Handles auth headers, timeouts, retries automatically</li>
+                    <li>Provider prefix system (<code>openai/</code>, <code>anthropic/</code>)</li>
+                    <li>Single interface for multiple LLM providers</li>
+                </ul>
+            </div>
+
+            <h3>2. Generator Pattern for Memory Efficiency</h3>
+            <div class="code-block">
+<span class="keyword">async for</span> result <span class="keyword">in</span> self.executor.parallel_execute(tool_calls):
+    results.append(result)
+            </div>
+            <p>Uses <code>asyncio.as_completed()</code> to yield results as they finish, reducing memory for large tool sets.</p>
+
+            <h3>3. Anthropic /messages API Support</h3>
+            <p>Fixed URL normalization for Anthropic-compatible endpoints:</p>
+            <div class="code-block">
+<span class="comment"># litellm adds /v1/messages, so strip it from base_url</span>
+api_base = self.base_url.rstrip(<span class="string">"/"</span>)
+<span class="keyword">if</span> api_base.endswith(<span class="string">"/v1"</span>):
+    api_base = api_base[:-3]  <span class="comment"># Remove "/v1"</span>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Test Results</h2>
+
+            <p>All tests are passing with the new HTTP-based agent layer:</p>
+
+            <div class="test-results">
+                <div class="test-item">
+                    <span class="test-name">test_simple_generate</span>
+                    <span class="status-badge status-pass">Pass</span>
+                    <span class="test-duration">4.3s</span>
+                </div>
+                <div class="test-item">
+                    <span class="test-name">test_chat_completion</span>
+                    <span class="status-badge status-pass">Pass</span>
+                    <span class="test-duration">-</span>
+                </div>
+                <div class="test-item">
+                    <span class="test-name">test_agent_simple_task</span>
+                    <span class="status-badge status-pass">Pass</span>
+                    <span class="test-duration">-</span>
+                </div>
+                <div class="test-item">
+                    <span class="test-name">test_agent_with_tools</span>
+                    <span class="status-badge status-pass">Pass</span>
+                    <span class="test-duration">11.9s</span>
+                </div>
+                <div class="test-item">
+                    <span class="test-name">Unit tests (77)</span>
+                    <span class="status-badge status-pass">Pass</span>
+                    <span class="test-duration">-</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Files Reference</h2>
+
+            <h3>Core Components</h3>
+            <table class="files-table">
+                <thead>
+                    <tr>
+                        <th>Path</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>src/petals/client/http_client.py</td><td>litellm wrapper, handles OpenAI/Anthropic</td></tr>
+                    <tr><td>src/petals/client/agent.py</td><td>AgentOrchestrator, main loop</td></tr>
+                    <tr><td>src/petals/client/tool_parser.py</td><td>&lt;tool_call&gt; extraction</td></tr>
+                    <tr><td>src/petals/client/tool_executor.py</td><td>Async parallel execution</td></tr>
+                    <tr><td>src/petals/client/tool_registry.py</td><td>Tool registration</td></tr>
+                    <tr><td>src/petals/client/context_manager.py</td><td>ContextWindow management</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Test & Reports</h3>
+            <table class="files-table">
+                <thead>
+                    <tr>
+                        <th>Path</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>tests/e2e/test_http_client_e2e.py</td><td>6 E2E tests with real endpoints</td></tr>
+                    <tr><td>docs/e2e-reports/*.json</td><td>Structured test reports</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <footer>
+            <p>P2P Petals - Agent HTTP Layer Project Recap</p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Generated 2026-03-20</p>
+        </footer>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#21262d',
+                primaryTextColor: '#e6edf3',
+                primaryBorderColor: '#30363d',
+                lineColor: '#8b949e',
+                secondaryColor: '#1a2332',
+                tertiaryColor: '#161b22',
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                useMaxWidth: true,
+                wrap: true
+            }
+        });
+    </script>
+</body>
+</html>

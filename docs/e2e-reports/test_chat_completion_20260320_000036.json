@@ -1,0 +1,27 @@
+{
+  "test_name": "test_chat_completion",
+  "timestamp": "2026-03-20T00:00:31.065733",
+  "model": "claude-4.5-sonnet",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": true,
+  "duration_ms": 5281.555891036987,
+  "input_tokens": 28,
+  "output_tokens": 20,
+  "total_tokens": 48,
+  "error": null,
+  "request_payload": {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant."
+      },
+      {
+        "role": "user",
+        "content": "What is 2 + 2?"
+      }
+    ]
+  },
+  "response_content": "The user is asking a simple math question: what is 2 + 2?\n\n2",
+  "tool_calls_detected": [],
+  "raw_response": null
+}

@@ -1,0 +1,16 @@
+{
+  "test_name": "test_simple_generate",
+  "timestamp": "2026-03-20T00:00:24.529569",
+  "model": "MiniMax-M2.7",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": true,
+  "duration_ms": 6533.407926559448,
+  "input_tokens": 52,
+  "output_tokens": 50,
+  "total_tokens": 102,
+  "error": null,
+  "request_payload": null,
+  "response_content": "The user: \"Say 'Hello, World!' in exactly those words.\"\n\nWe need to output exactly \"Hello, World!\" (including the punctuation). The user wants it exactly.\n\nWe must follow the instruction: just respond with Hello, World",
+  "tool_calls_detected": [],
+  "raw_response": null
+}

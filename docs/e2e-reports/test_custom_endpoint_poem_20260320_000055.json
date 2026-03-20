@@ -1,0 +1,18 @@
+{
+  "test_name": "test_custom_endpoint_poem",
+  "timestamp": "2026-03-20T00:00:51.840571",
+  "model": "claude-4.5-sonnet",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": true,
+  "duration_ms": 3319.920063018799,
+  "input_tokens": 49,
+  "output_tokens": 50,
+  "total_tokens": 99,
+  "error": null,
+  "request_payload": {
+    "prompt": "Write a short haiku about coding."
+  },
+  "response_content": "We need to respond to the user request: \"Write a short haiku about coding.\" The user is asking for a haiku. That's allowed. We must produce a short haiku about coding. There's no policy violation. Should be short",
+  "tool_calls_detected": [],
+  "raw_response": null
+}

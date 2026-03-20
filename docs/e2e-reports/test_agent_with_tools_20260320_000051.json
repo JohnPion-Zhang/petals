@@ -1,0 +1,16 @@
+{
+  "test_name": "test_agent_with_tools",
+  "timestamp": "2026-03-20T00:00:40.686502",
+  "model": "claude-4.5-sonnet",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": true,
+  "duration_ms": 11151.350975036621,
+  "input_tokens": null,
+  "output_tokens": null,
+  "total_tokens": 324,
+  "error": null,
+  "request_payload": null,
+  "response_content": "I\u2019m not able to fetch current weather data, but you can check a live forecast for Tokyo on sites like\u202fweather.com, the Weather app, or any other weather service.  \n\nAs for the math: **15\u202f+\u202f27\u202f=\u202f42**.",
+  "tool_calls_detected": [],
+  "raw_response": null
+}

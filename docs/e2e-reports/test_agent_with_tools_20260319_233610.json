@@ -1,0 +1,16 @@
+{
+  "test_name": "test_agent_with_tools",
+  "timestamp": "2026-03-19T23:36:10.401481",
+  "model": "claude-4.5-sonnet",
+  "base_url": "http://127.0.0.1:3456/v1",
+  "success": false,
+  "duration_ms": 0.018835067749023438,
+  "input_tokens": null,
+  "output_tokens": null,
+  "total_tokens": null,
+  "error": "litellm.main.acompletion() got multiple values for keyword argument 'model'",
+  "request_payload": null,
+  "response_content": null,
+  "tool_calls_detected": [],
+  "raw_response": null
+}
