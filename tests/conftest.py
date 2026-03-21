@@ -23,8 +23,16 @@ def event_loop():
     For example, this happens while using ``asyncio.subprocess`` (the ``asyncio.subprocess.Process`` finalizer
     fails if the loop is closed, but works if the loop is only stopped).
     """
-
-    yield asyncio.get_event_loop()
+    import warnings
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_closed():
+                loop = asyncio.new_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+    yield loop
 
 
 @pytest.fixture(autouse=True, scope="session")
